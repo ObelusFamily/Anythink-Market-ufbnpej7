@@ -40,6 +40,7 @@ router.get("/", auth.optional, function(req, res, next) {
   var query = {};
   var limit = 100;
   var offset = 0;
+  var title = "";
 
   if (typeof req.query.limit !== "undefined") {
     limit = req.query.limit;
@@ -51,6 +52,10 @@ router.get("/", auth.optional, function(req, res, next) {
 
   if (typeof req.query.tag !== "undefined") {
     query.tagList = { $in: [req.query.tag] };
+  }
+
+  if (typeof req.query.title !== "undefined") {
+    title = req.query.title;
   }
 
   Promise.all([
@@ -73,6 +78,7 @@ router.get("/", auth.optional, function(req, res, next) {
 
       return Promise.all([
         Item.find(query)
+          .$where("this.title.toLowerCase().includes('" + title + "')")
           .limit(Number(limit))
           .skip(Number(offset))
           .sort({ createdAt: "desc" })
